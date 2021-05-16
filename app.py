@@ -16,12 +16,12 @@ BEXIMCO_data=pd.read_csv(r'data/BEXIMCO.csv', index_col="DATE", parse_dates=True
 #BEXIMCO_data["LOW"] = BEXIMCO_data["LOW"].str.replace(',', '').astype(float);
 #BEXIMCO_data["CLOSE"] = BEXIMCO_data["CLOSE"].str.replace(',', '').astype(float);
 #BEXIMCO_data["VOLUME"] = BEXIMCO_data["VOLUME"].str.replace(',', '').astype(float);
-BEXIMCO_data2 = BEXIMCO_data.reset_index()['CLOSE'];
+BEXIMCO_data1 = BEXIMCO_data.reset_index()['CLOSE'];
 #print(BEXIMCO_data.info())
 
 # Convert/Scale the Data
 scaler= MinMaxScaler(feature_range = (0,1))
-BEXIMCO_data2 = scaler.fit_transform(np.array(BEXIMCO_data2).reshape(-1,1));
+BEXIMCO_data2 = scaler.fit_transform(np.array(BEXIMCO_data1).reshape(-1,1));
 
 # Split Data into Test and Train sets
 training_size=int(len(BEXIMCO_data2)*0.90);
@@ -51,12 +51,12 @@ BATBC_data=pd.read_csv(r'data/BATBC.csv', index_col="DATE", parse_dates=True)
 #BATBC_data["LOW"] = BATBC_data["LOW"].str.replace(',', '').astype(float);
 BATBC_data["CLOSE"] = BATBC_data["CLOSE"].str.replace(',', '').astype(float);
 #BATBC_data["VOLUME"] = BATBC_data["VOLUME"].str.replace(',', '').astype(float);
-BATBC_data2 = BATBC_data.reset_index()['CLOSE'];
+BATBC_data1 = BATBC_data.reset_index()['CLOSE'];
 #print(BATBC_data.info())
 
 # Convert/Scale the Data
 scaler= MinMaxScaler(feature_range = (0,1))
-BATBC_data2 = scaler.fit_transform(np.array(BATBC_data2).reshape(-1,1));
+BATBC_data2 = scaler.fit_transform(np.array(BATBC_data1).reshape(-1,1));
 
 # Split Data into Test and Train sets
 training_size=int(len(BATBC_data2)*0.70);
@@ -88,12 +88,12 @@ LB_data=pd.read_csv(r'data/LANKABANGLA.csv', index_col="DATE", parse_dates=True)
 #LB_data["LOW"] = LB_data["LOW"].str.replace(',', '').astype(float);
 #LB_data["CLOSE"] = LB_data["CLOSE"].str.replace(',', '').astype(float);
 #LB_data["VOLUME"] = LB_data["VOLUME"].str.replace(',', '').astype(float);
-LB_data2 = LB_data.reset_index()['CLOSE'];
+LB_data1 = LB_data.reset_index()['CLOSE'];
 #print(BATBC_data.info())
 
 # Convert/Scale the Data
 scaler= MinMaxScaler(feature_range = (0,1))
-LB_data2 = scaler.fit_transform(np.array(LB_data2).reshape(-1,1));
+LB_data2 = scaler.fit_transform(np.array(LB_data1).reshape(-1,1));
 
 # Split Data into Test and Train sets
 training_size=int(len(LB_data2)*0.70);
@@ -133,7 +133,7 @@ regressor.compile(loss='mean_squared_error', optimizer='adam');
 l1=['BEXIMCO', 'BATBC', 'LANKABANGLA']
 
 def LSTM():
-    selection=Symptom1.get()
+    selection=Company1.get()
     if (selection=='BEXIMCO'):
         print('Total Data:', len(BEXIMCO_data2))
         print('TrainData:', len(BEX_train_data),',', 'TestData:', len(BEX_test_data));
@@ -289,23 +289,88 @@ def LSTM():
         plt.ylabel('Stock Closing Price',fontsize='11.5')
         plt.show()
         fig.savefig('Output/LANKABANGLA.jpg') 
-        
+    else:
+        print("Please select a company!")
+
+def Compare():
+    selection1=Select1.get()
+    selection2=Select2.get()
+    
+    if (selection1=='BEXIMCO' or selection2=='BEXIMCO'):
+        if (selection1=='LANKABANGLA' or selection2=='LANKABANGLA'):
+            # Visualization
+            fig = plt.figure(figsize=(10,5))
+            fig.suptitle('Stock Closing Price Comparison', fontsize='12')
+            plt.plot(BEXIMCO_data1[100:],color='firebrick',alpha=0.9, label="BEXIMCO")
+            plt.plot(LB_data1[100:],color='blue',alpha=0.9, label="LANKABANGLA")
+            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+            plt.xlabel('Time',fontsize='11.5')
+            plt.ylabel('Stock Closing Price',fontsize='11.5')
+            plt.show()
+        elif (selection1=='BATBC' or selection2=='BATBC'):
+            # Visualization
+            fig = plt.figure(figsize=(10,5))
+            fig.suptitle('Stock Closing Price Comparison', fontsize='12')
+            plt.plot(BEXIMCO_data1[100:],color='firebrick',alpha=0.9, label="BEXIMCO")
+            plt.plot(BATBC_data1[100:],color='blue',alpha=0.9, label="BATBC")
+            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+            plt.xlabel('Time',fontsize='11.5')
+            plt.ylabel('Stock Closing Price',fontsize='11.5')
+            plt.show()  
+
+    elif (selection1=='LANKABANGLA' or selection2=='LANKABANGLA'):
+        if (selection1=='BATBC' or selection2=='BATBC'):
+        # Visualization
+            fig = plt.figure(figsize=(10,5))
+            fig.suptitle('Stock Closing Price Comparison', fontsize='12')
+            plt.plot(BATBC_data1[100:],color='green',alpha=0.9, label="BATBC")
+            plt.plot(LB_data1[100:],color='blue',alpha=0.9, label="LANKABANGLA")
+            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+            plt.xlabel('Time',fontsize='11.5')
+            plt.ylabel('Stock Closing Price',fontsize='11.5')
+            plt.show()             
+    else:
+        print("Please Select two different companies!")
+
 # GUI Part
 root = Tk()
-root.wm_title("Stock Closing Price Predictor")
+root.wm_title("StockApp")
 root.configure(background='white')
 w2 = Label(root, text="Stock Closing Price Predictor", fg="Orange", bg="White")
 w2.config(font=("Poppins",16,"bold"))
-w2.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
-Symptom1 = StringVar()
-Symptom1.set("Choose Company")
+w2.grid(row=1, column=0, columnspan=2, pady=10)
+Company1 = StringVar()
+Company1.set("Choose Company")
 S1Lb = Label(root, text="Company Name:", fg="Black", bg="White")
 S1Lb.config(font=("Poppins",10,"bold"))
 S1Lb.grid(row=7, column=0, padx=10, pady=10, sticky=W)
 OPTIONS = sorted(l1)
-S1 = OptionMenu(root, Symptom1,*OPTIONS)
+S1 = OptionMenu(root, Company1,*OPTIONS)
 S1.grid(row=7, column=1) 
 lstm = Button(root, text="Predict", command=LSTM,bg="Orange",fg="white")
 lstm.config(font=("poppins",10,"bold"))
 lstm.grid(row=7, column=3, padx=10, pady=10)
+
+w3 = Label(root, text=" Compare Stock Closing Prices", fg="Orange", bg="White")
+w3.config(font=("Poppins",16,"bold"))
+w3.grid(row=10, column=0, columnspan=2, pady=10)
+Select1 = StringVar()
+Select1.set("Choose Company")
+Select2 = StringVar()
+Select2.set("Choose Company")
+S2Lb = Label(root, text="First Company Name:", fg="Black", bg="White")
+S2Lb.config(font=("Poppins",10,"bold"))
+S2Lb.grid(row=12, column=0, padx=10, pady=10, sticky=W)
+S3Lb = Label(root, text="Second Company Name:", fg="Black", bg="White")
+S3Lb.config(font=("Poppins",10,"bold"))
+S3Lb.grid(row=13, column=0, padx=10, pady=10, sticky=W)
+OPTIONS = sorted(l1)
+S2 = OptionMenu(root, Select1,*OPTIONS)
+S2.grid(row=12, column=1) 
+S3 = OptionMenu(root, Select2,*OPTIONS)
+S3.grid(row=13, column=1) 
+cmp = Button(root, text="Compare", command=Compare,bg="Orange",fg="white")
+cmp.config(font=("poppins",10,"bold"))
+cmp.grid(row=12, column=3, padx=10, pady=10)
+
 root.mainloop()

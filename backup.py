@@ -8,7 +8,7 @@ from keras.layers import Dense;
 from keras.layers import LSTM;
 from keras.layers import Dropout;
 
-data=pd.read_csv(r'SQPHARMA.csv', index_col="DATE", parse_dates=True)
+data=pd.read_csv(r'data/SQPHARMA.csv', index_col="DATE", parse_dates=True)
 head = data.head();
 #print(head);
 #tail = data.tail();
@@ -17,11 +17,11 @@ head = data.head();
 
 #data preprocessing
 
-data["OPEN"] = data["OPEN"].str.replace(',', '').astype(float);
-data["HIGH"] = data["HIGH"].str.replace(',', '').astype(float);
-data["LOW"] = data["LOW"].str.replace(',', '').astype(float);
-data["CLOSE"] = data["CLOSE"].str.replace(',', '').astype(float);
-data["VOLUME"] = data["VOLUME"].str.replace(',', '').astype(float);
+#data["OPEN"] = data["OPEN"].str.replace(',', '').astype(float);
+#data["HIGH"] = data["HIGH"].str.replace(',', '').astype(float);
+#data["LOW"] = data["LOW"].str.replace(',', '').astype(float);
+#data["CLOSE"] = data["CLOSE"].str.replace(',', '').astype(float);
+#data["VOLUME"] = data["VOLUME"].str.replace(',', '').astype(float);
 #data.info();
 #data['CLOSE'].plot(figsize=(16,6))
 data.rolling(window=15).mean()['CLOSE'].plot()
@@ -45,7 +45,7 @@ for i in range(15,397):
     y_train.append(scaled_train_set[i,0])
 X_train, y_train = np.array(X_train), np.array(y_train)
 X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1],1))
-#print(X_train)
+print(X_train.shape[1])
 regressor= Sequential();
 
 #1st LSTM Layer and dropout regularization
