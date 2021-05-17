@@ -19,7 +19,7 @@ BEXIMCO_data["VOLUME"] = BEXIMCO_data["VOLUME"].str.replace(',', '').astype(floa
 BEXIMCO_data["TRADE"] = BEXIMCO_data["TRADE"].str.replace(',', '').astype(float);
 
 BEXIMCO_data1 = BEXIMCO_data.reset_index()['CLOSE'];
-#print(BEXIMCO_data.info())
+#print(BEXIMCO_data.head())
 
 # Convert/Scale the Data
 scaler= MinMaxScaler(feature_range = (0,1))

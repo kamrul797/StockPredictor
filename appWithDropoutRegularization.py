@@ -16,9 +16,11 @@ BEXIMCO_data=pd.read_csv(r'data/BEXIMCO.csv', index_col="DATE", parse_dates=True
 #BEXIMCO_data["HIGH"] = BEXIMCO_data["HIGH"].str.replace(',', '').astype(float);
 #BEXIMCO_data["LOW"] = BEXIMCO_data["LOW"].str.replace(',', '').astype(float);
 #BEXIMCO_data["CLOSE"] = BEXIMCO_data["CLOSE"].str.replace(',', '').astype(float);
-#BEXIMCO_data["VOLUME"] = BEXIMCO_data["VOLUME"].str.replace(',', '').astype(float);
+BEXIMCO_data["VOLUME"] = BEXIMCO_data["VOLUME"].str.replace(',', '').astype(float);
+BEXIMCO_data["TRADE"] = BEXIMCO_data["TRADE"].str.replace(',', '').astype(float);
+
 BEXIMCO_data1 = BEXIMCO_data.reset_index()['CLOSE'];
-#print(BEXIMCO_data.info())
+#print(BEXIMCO_data.head())
 
 # Convert/Scale the Data
 scaler= MinMaxScaler(feature_range = (0,1))
@@ -48,10 +50,11 @@ BEX_X_test = BEX_X_test.reshape(BEX_X_test.shape[0], BEX_X_test.shape[1], 1);
 # Load Data and Convert Data Type
 BATBC_data=pd.read_csv(r'data/BATBC.csv', index_col="DATE", parse_dates=True)
 #BATBC_data["OPEN"] = BATBC_data["OPEN"].str.replace(',', '').astype(float);
-#BATBC_data["HIGH"] = BATBC_data["HIGH"].str.replace(',', '').astype(float);
-#BATBC_data["LOW"] = BATBC_data["LOW"].str.replace(',', '').astype(float);
+BATBC_data["HIGH"] = BATBC_data["HIGH"].str.replace(',', '').astype(float);
+BATBC_data["LOW"] = BATBC_data["LOW"].str.replace(',', '').astype(float);
 BATBC_data["CLOSE"] = BATBC_data["CLOSE"].str.replace(',', '').astype(float);
-#BATBC_data["VOLUME"] = BATBC_data["VOLUME"].str.replace(',', '').astype(float);
+BATBC_data["VOLUME"] = BATBC_data["VOLUME"].str.replace(',', '').astype(float);
+BATBC_data["TRADE"] = BATBC_data["TRADE"].str.replace(',', '').astype(float);
 BATBC_data1 = BATBC_data.reset_index()['CLOSE'];
 #print(BATBC_data.info())
 
@@ -88,9 +91,10 @@ LB_data=pd.read_csv(r'data/LANKABANGLA.csv', index_col="DATE", parse_dates=True)
 #LB_data["HIGH"] = LB_data["HIGH"].str.replace(',', '').astype(float);
 #LB_data["LOW"] = LB_data["LOW"].str.replace(',', '').astype(float);
 #LB_data["CLOSE"] = LB_data["CLOSE"].str.replace(',', '').astype(float);
-#LB_data["VOLUME"] = LB_data["VOLUME"].str.replace(',', '').astype(float);
+LB_data["TRADE"] = LB_data["TRADE"].str.replace(',', '').astype(float);
+LB_data["VOLUME"] = LB_data["VOLUME"].str.replace(',', '').astype(float);
 LB_data1 = LB_data.reset_index()['CLOSE'];
-#print(BATBC_data.info())
+#print(LB_data.info())
 
 # Convert/Scale the Data
 scaler= MinMaxScaler(feature_range = (0,1))
@@ -114,7 +118,6 @@ LB_X_train, LB_y_train = create_dataset(LB_train_data, time_step);
 LB_X_test, LB_y_test = create_dataset(LB_test_data, time_step);        
 LB_X_train = LB_X_train.reshape(LB_X_train.shape[0], LB_X_train.shape[1], 1);
 LB_X_test = LB_X_test.reshape(LB_X_test.shape[0], LB_X_test.shape[1], 1);
-
 # ---------------------------------------------------------------------------------------
 
 # Build the LSTM Network
