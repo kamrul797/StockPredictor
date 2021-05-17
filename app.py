@@ -15,7 +15,9 @@ BEXIMCO_data=pd.read_csv(r'data/BEXIMCO.csv', index_col="DATE", parse_dates=True
 #BEXIMCO_data["HIGH"] = BEXIMCO_data["HIGH"].str.replace(',', '').astype(float);
 #BEXIMCO_data["LOW"] = BEXIMCO_data["LOW"].str.replace(',', '').astype(float);
 #BEXIMCO_data["CLOSE"] = BEXIMCO_data["CLOSE"].str.replace(',', '').astype(float);
-#BEXIMCO_data["VOLUME"] = BEXIMCO_data["VOLUME"].str.replace(',', '').astype(float);
+BEXIMCO_data["VOLUME"] = BEXIMCO_data["VOLUME"].str.replace(',', '').astype(float);
+BEXIMCO_data["TRADE"] = BEXIMCO_data["TRADE"].str.replace(',', '').astype(float);
+
 BEXIMCO_data1 = BEXIMCO_data.reset_index()['CLOSE'];
 #print(BEXIMCO_data.info())
 
@@ -47,10 +49,11 @@ BEX_X_test = BEX_X_test.reshape(BEX_X_test.shape[0], BEX_X_test.shape[1], 1);
 # Load Data and Convert Data Type
 BATBC_data=pd.read_csv(r'data/BATBC.csv', index_col="DATE", parse_dates=True)
 #BATBC_data["OPEN"] = BATBC_data["OPEN"].str.replace(',', '').astype(float);
-#BATBC_data["HIGH"] = BATBC_data["HIGH"].str.replace(',', '').astype(float);
-#BATBC_data["LOW"] = BATBC_data["LOW"].str.replace(',', '').astype(float);
+BATBC_data["HIGH"] = BATBC_data["HIGH"].str.replace(',', '').astype(float);
+BATBC_data["LOW"] = BATBC_data["LOW"].str.replace(',', '').astype(float);
 BATBC_data["CLOSE"] = BATBC_data["CLOSE"].str.replace(',', '').astype(float);
-#BATBC_data["VOLUME"] = BATBC_data["VOLUME"].str.replace(',', '').astype(float);
+BATBC_data["VOLUME"] = BATBC_data["VOLUME"].str.replace(',', '').astype(float);
+BATBC_data["TRADE"] = BATBC_data["TRADE"].str.replace(',', '').astype(float);
 BATBC_data1 = BATBC_data.reset_index()['CLOSE'];
 #print(BATBC_data.info())
 
@@ -87,9 +90,10 @@ LB_data=pd.read_csv(r'data/LANKABANGLA.csv', index_col="DATE", parse_dates=True)
 #LB_data["HIGH"] = LB_data["HIGH"].str.replace(',', '').astype(float);
 #LB_data["LOW"] = LB_data["LOW"].str.replace(',', '').astype(float);
 #LB_data["CLOSE"] = LB_data["CLOSE"].str.replace(',', '').astype(float);
-#LB_data["VOLUME"] = LB_data["VOLUME"].str.replace(',', '').astype(float);
+LB_data["TRADE"] = LB_data["TRADE"].str.replace(',', '').astype(float);
+LB_data["VOLUME"] = LB_data["VOLUME"].str.replace(',', '').astype(float);
 LB_data1 = LB_data.reset_index()['CLOSE'];
-#print(BATBC_data.info())
+#print(LB_data.info())
 
 # Convert/Scale the Data
 scaler= MinMaxScaler(feature_range = (0,1))
@@ -120,7 +124,7 @@ LB_X_test = LB_X_test.reshape(LB_X_test.shape[0], LB_X_test.shape[1], 1);
 regressor= Sequential();
 
 # 1st LSTM Layer
-regressor.add(LSTM(50, return_sequences=True, input_shape = (42,1)));
+regressor.add(LSTM(50, return_sequences=True, input_shape = (time_step,1)));
 
 # 2nd LSTM Layer
 regressor.add(LSTM(50, return_sequences=True));
@@ -130,10 +134,12 @@ regressor.add(LSTM(50))
 
 regressor.add(Dense(1))
 regressor.compile(loss='mean_squared_error', optimizer='adam');
+
 l1=['BEXIMCO', 'BATBC', 'LANKABANGLA']
+pred_day = ['5','10']
 
 def LSTM():
-    selection=Company1.get()
+    selection=Company.get()
     if (selection=='BEXIMCO'):
         print('Total Data:', len(BEXIMCO_data2))
         print('TrainData:', len(BEX_train_data),',', 'TestData:', len(BEX_test_data));
@@ -145,22 +151,24 @@ def LSTM():
         test_predict=regressor.predict(BEX_X_test);
         train_predict=scaler.inverse_transform(train_predict);
         test_predict=scaler.inverse_transform(test_predict);
-        x_input=BEX_test_data[8:].reshape(1,-1);
+        step=len(BEX_test_data)-time_step
+        x_input=BEX_test_data[step:].reshape(1,-1);
         temp_input=list(x_input)
         temp_input=temp_input[0].tolist();
         
         # Make prediction for the next 10 days
         lst_output=[]
-        n_steps=42;
+        n_steps=time_step;
         i=0
-        while(i<10):
-            if(len(temp_input)>42):
+        days=int(Days.get())
+        while(i<days):
+            if(len(temp_input)>n_steps):
                 x_input=np.array(temp_input[1:])
-                print("{} day input{}".format(i,x_input));
+                #print("{} day input{}".format(i,x_input));
                 x_input=x_input.reshape(1,-1);
                 x_input=x_input.reshape((1, n_steps,1))
                 ythat=regressor.predict(x_input, verbose=0)
-                print("{} day output{}".format(i,ythat));
+                #print("{} day output{}".format(i,ythat));
                 temp_input.extend(ythat[0].tolist())
                 temp_input=temp_input[1:]
                 lst_output.extend(ythat.tolist())
@@ -168,11 +176,11 @@ def LSTM():
             else:
                 x_input=x_input.reshape((1, n_steps,1))
                 ythat=regressor.predict(x_input, verbose=0)
-                print(ythat[0])
+                #print(ythat[0])
                 temp_input.extend(ythat[0].tolist());
                 lst_output.extend(ythat.tolist())
                 i=i+1; 
-                
+              
         # Visualization
         fig = plt.figure(figsize=(10,5))
         fig.suptitle('Stock Closing Price Prediction [BEXIMCO]', fontsize='12')
@@ -197,22 +205,24 @@ def LSTM():
         test_predict=regressor.predict(BAT_X_test);
         train_predict=scaler.inverse_transform(train_predict);
         test_predict=scaler.inverse_transform(test_predict);
-        x_input=BAT_test_data[108:].reshape(1,-1);
+        step=len(BAT_test_data)-time_step;
+        x_input=BAT_test_data[step:].reshape(1,-1);
         temp_input=list(x_input)
         temp_input=temp_input[0].tolist();
         
         # Make prediction for the next 10 days
         lst_output=[]
-        n_steps=42;
+        n_steps=time_step;
         i=0
-        while(i<10):
-            if(len(temp_input)>42):
+        days=int(Days.get())
+        while(i<days):
+            if(len(temp_input)>n_steps):
                 x_input=np.array(temp_input[1:])
-                print("{} day input{}".format(i,x_input));
+                #print("{} day input{}".format(i,x_input));
                 x_input=x_input.reshape(1,-1);
                 x_input=x_input.reshape((1, n_steps,1))
                 ythat=regressor.predict(x_input, verbose=0)
-                print("{} day output{}".format(i,ythat));
+                #print("{} day output{}".format(i,ythat));
                 temp_input.extend(ythat[0].tolist())
                 temp_input=temp_input[1:]
                 lst_output.extend(ythat.tolist())
@@ -220,7 +230,7 @@ def LSTM():
             else:
                 x_input=x_input.reshape((1, n_steps,1))
                 ythat=regressor.predict(x_input, verbose=0)
-                print(ythat[0])
+                #print(ythat[0])
                 temp_input.extend(ythat[0].tolist());
                 lst_output.extend(ythat.tolist())
                 i=i+1;        
@@ -249,22 +259,24 @@ def LSTM():
         test_predict=regressor.predict(LB_X_test);
         train_predict=scaler.inverse_transform(train_predict);
         test_predict=scaler.inverse_transform(test_predict);
-        x_input=LB_test_data[108:].reshape(1,-1);
+        step=len(LB_test_data)-time_step
+        x_input=LB_test_data[step:].reshape(1,-1);
         temp_input=list(x_input)
         temp_input=temp_input[0].tolist();
         
         # Make prediction for the next 10 days
         lst_output=[]
-        n_steps=42;
+        n_steps=time_step;
         i=0
-        while(i<10):
-            if(len(temp_input)>42):
+        days=int(Days.get())
+        while(i<days):
+            if(len(temp_input)>n_steps):
                 x_input=np.array(temp_input[1:])
-                print("{} day input{}".format(i,x_input));
+                #print("{} day input{}".format(i,x_input));
                 x_input=x_input.reshape(1,-1);
                 x_input=x_input.reshape((1, n_steps,1))
                 ythat=regressor.predict(x_input, verbose=0)
-                print("{} day output{}".format(i,ythat));
+                #print("{} day output{}".format(i,ythat));
                 temp_input.extend(ythat[0].tolist())
                 temp_input=temp_input[1:]
                 lst_output.extend(ythat.tolist())
@@ -272,7 +284,7 @@ def LSTM():
             else:
                 x_input=x_input.reshape((1, n_steps,1))
                 ythat=regressor.predict(x_input, verbose=0)
-                print(ythat[0])
+                #print(ythat[0])
                 temp_input.extend(ythat[0].tolist());
                 lst_output.extend(ythat.tolist())
                 i=i+1;        
@@ -300,77 +312,223 @@ def Compare():
         if (selection1=='LANKABANGLA' or selection2=='LANKABANGLA'):
             # Visualization
             fig = plt.figure(figsize=(10,5))
-            fig.suptitle('Stock Closing Price Comparison', fontsize='12')
-            plt.plot(BEXIMCO_data1[100:],color='firebrick',alpha=0.9, label="BEXIMCO")
-            plt.plot(LB_data1[100:],color='blue',alpha=0.9, label="LANKABANGLA")
+            fig.suptitle('Stock Market Volume Comparison', fontsize='12')
+            plt.plot(BEXIMCO_data["VOLUME"],color='firebrick',alpha=0.9, label="BEXIMCO")
+            plt.plot(LB_data["VOLUME"],color='blue',alpha=0.9, label="LANKABANGLA")
             plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
             plt.xlabel('Time',fontsize='11.5')
-            plt.ylabel('Stock Closing Price',fontsize='11.5')
+            plt.ylabel('Market Volume',fontsize='11.5')
             plt.show()
         elif (selection1=='BATBC' or selection2=='BATBC'):
             # Visualization
             fig = plt.figure(figsize=(10,5))
-            fig.suptitle('Stock Closing Price Comparison', fontsize='12')
-            plt.plot(BEXIMCO_data1[100:],color='firebrick',alpha=0.9, label="BEXIMCO")
-            plt.plot(BATBC_data1[100:],color='blue',alpha=0.9, label="BATBC")
+            fig.suptitle('Stock Market Volume Comparison', fontsize='12')
+            plt.plot(BEXIMCO_data["VOLUME"],color='firebrick',alpha=0.9, label="BEXIMCO")
+            plt.plot(BATBC_data["VOLUME"],color='blue',alpha=0.9, label="BATBC")
             plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
             plt.xlabel('Time',fontsize='11.5')
-            plt.ylabel('Stock Closing Price',fontsize='11.5')
+            plt.ylabel('Market Volume',fontsize='11.5')
             plt.show()  
 
     elif (selection1=='LANKABANGLA' or selection2=='LANKABANGLA'):
         if (selection1=='BATBC' or selection2=='BATBC'):
         # Visualization
             fig = plt.figure(figsize=(10,5))
-            fig.suptitle('Stock Closing Price Comparison', fontsize='12')
-            plt.plot(BATBC_data1[100:],color='green',alpha=0.9, label="BATBC")
-            plt.plot(LB_data1[100:],color='blue',alpha=0.9, label="LANKABANGLA")
+            fig.suptitle('Stock Market Volume Comparison', fontsize='12')
+            plt.plot(BATBC_data["VOLUME"],color='green',alpha=0.9, label="BATBC")
+            plt.plot(LB_data["VOLUME"],color='blue',alpha=0.9, label="LANKABANGLA")
+            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+            plt.xlabel('Time',fontsize='11.5')
+            plt.ylabel('Market Volume',fontsize='11.5')
+            plt.show()             
+    else:
+        print("Please Select two different companies!")
+        
+def Close():
+    Property=Prop.get()
+    
+    if (Property=='BEXIMCO'):
+            fig = plt.figure(figsize=(10,5))
+            fig.suptitle('Stock Closing Price [BEXIMCO]', fontsize='12')
+            plt.plot(BEXIMCO_data["CLOSE"],color='firebrick',alpha=0.9, label="Closing Price")
+            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+            plt.xlabel('Time',fontsize='11.5')
+            plt.ylabel('Stock Closing Price',fontsize='11.5')
+            plt.show()
+    elif (Property=='BATBC'):
+            # Visualization
+            fig = plt.figure(figsize=(10,5))
+            fig.suptitle('Stock Closing Price [BATBC]', fontsize='12')
+            plt.plot(BATBC_data["CLOSE"],color='green',alpha=0.9, label="Closing Price")
+            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+            plt.xlabel('Time',fontsize='11.5')
+            plt.ylabel('Stock Closing Price',fontsize='11.5')
+            plt.show()  
+
+    elif (Property=='LANKABANGLA'):
+            # Visualization
+            fig = plt.figure(figsize=(10,5))
+            fig.suptitle('Stock Closing Price [LANKABANGLA]', fontsize='12')
+            plt.plot(LB_data["CLOSE"],color='blue',alpha=0.9, label="Closing Price")
             plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
             plt.xlabel('Time',fontsize='11.5')
             plt.ylabel('Stock Closing Price',fontsize='11.5')
             plt.show()             
     else:
-        print("Please Select two different companies!")
+        print("Please Select a company!")        
+
+def Trade():
+    Property=Prop.get()
+    
+    if (Property=='BEXIMCO'):
+            fig = plt.figure(figsize=(10,5))
+            fig.suptitle('Daily Trade [BEXIMCO] ', fontsize='12')
+            plt.plot(BEXIMCO_data["TRADE"],color='firebrick',alpha=0.9, label="Daily Trade")
+            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+            plt.xlabel('Time',fontsize='11.5')
+            plt.ylabel('Number of Trades',fontsize='11.5')
+            plt.show()
+    elif (Property=='BATBC'):
+            # Visualization
+            fig = plt.figure(figsize=(10,5))
+            fig.suptitle('Daily Trade [BATBC]', fontsize='12')
+            plt.plot(BATBC_data["TRADE"],color='green',alpha=0.9, label="Daily Trade")
+            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+            plt.xlabel('Time',fontsize='11.5')
+            plt.ylabel('Number of Trades',fontsize='11.5')
+            plt.show()  
+
+    elif (Property=='LANKABANGLA'):
+            # Visualization
+            fig = plt.figure(figsize=(10,5))
+            fig.suptitle('Daily Trade [LANKABANGLA]', fontsize='12')
+            plt.plot(LB_data["TRADE"],color='blue',alpha=0.9, label="Daily Trade")
+            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+            plt.xlabel('Time',fontsize='11.5')
+            plt.ylabel('Number of Trades',fontsize='11.5')
+            plt.show()             
+    else:
+        print("Please Select a company!")  
+        
+def HVL():
+    Property=Prop.get()
+    
+    if (Property=='BEXIMCO'):
+            fig = plt.figure(figsize=(10,5))
+            fig.suptitle('Daily High vs Low [BEXIMCO]', fontsize='12')
+            plt.plot(BEXIMCO_data["HIGH"],color='Green',alpha=0.9, label="High")
+            plt.plot(BEXIMCO_data["LOW"],color='firebrick',alpha=0.9, label="Low")
+            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+            plt.xlabel('Time',fontsize='11.5')
+            plt.ylabel('High vs Low Price',fontsize='11.5')
+            plt.show()
+    elif (Property=='BATBC'):
+            # Visualization
+            fig = plt.figure(figsize=(10,5))
+            fig.suptitle('Daily High vs Low [BATBC]', fontsize='12')
+            plt.plot(BATBC_data["HIGH"],color='Green',alpha=0.9, label="High")
+            plt.plot(BATBC_data["LOW"],color='firebrick',alpha=0.9, label="Low")
+            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+            plt.xlabel('Time',fontsize='11.5')
+            plt.ylabel('High vs Low Price',fontsize='11.5')
+            plt.show()  
+
+    elif (Property=='LANKABANGLA'):
+            # Visualization
+            fig = plt.figure(figsize=(10,5))
+            fig.suptitle('Daily High vs Low [LANKABANGLA]', fontsize='12')
+            plt.plot(LB_data["HIGH"],color='Green',alpha=0.9, label="High")
+            plt.plot(LB_data["LOW"],color='firebrick',alpha=0.9, label="Low")
+            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+            plt.xlabel('Time',fontsize='11.5')
+            plt.ylabel('High vs Low Price',fontsize='11.5')
+            plt.show()             
+    else:
+        print("Please Select a company!")  
+
 
 # GUI Part
 root = Tk()
 root.wm_title("StockApp")
 root.configure(background='white')
-w2 = Label(root, text="Stock Closing Price Predictor", fg="Orange", bg="White")
-w2.config(font=("Poppins",16,"bold"))
-w2.grid(row=1, column=0, columnspan=2, pady=10)
-Company1 = StringVar()
-Company1.set("Choose Company")
+root.grid_rowconfigure(0, weight=1)
+root.grid_columnconfigure(0, weight=1)
+OPTIONS = sorted(l1)
+DAYS = pred_day
+# Prediction
+
+w2 = Label(root, text="Predict Stock Closing Price", fg="midnight blue", bg="White")
+w2.config(font=("Poppins",12,"bold"))
+w2.grid(row=1, column=0, columnspan=4, pady=10)
+Company = StringVar()
+Company.set("Choose Company")
 S1Lb = Label(root, text="Company Name:", fg="Black", bg="White")
 S1Lb.config(font=("Poppins",10,"bold"))
-S1Lb.grid(row=7, column=0, padx=10, pady=10, sticky=W)
-OPTIONS = sorted(l1)
-S1 = OptionMenu(root, Company1,*OPTIONS)
-S1.grid(row=7, column=1) 
-lstm = Button(root, text="Predict", command=LSTM,bg="Orange",fg="white")
+S1Lb.grid(row=6, column=0, padx=15, pady=15, sticky=W)
+S1 = OptionMenu(root, Company,*OPTIONS)
+S1.grid(row=6, column=1)
+Days = StringVar()
+Days.set("10")
+S5Lb = Label(root, text="Number of Days:", fg="Black", bg="White")
+S5Lb.config(font=("Poppins",10,"bold"))
+S5Lb.grid(row=7, column=0, padx=15, pady=15, sticky=W)
+S1 = OptionMenu(root, Days,*DAYS)
+S1.grid(row=7, column=1)
+lstm = Button(root, text="Predict", command=LSTM,bg="midnight blue",fg="white")
 lstm.config(font=("poppins",10,"bold"))
-lstm.grid(row=7, column=3, padx=10, pady=10)
+lstm.grid(row=6, column=2, padx=15, pady=15)
 
-w3 = Label(root, text=" Compare Stock Closing Prices", fg="Orange", bg="White")
-w3.config(font=("Poppins",16,"bold"))
-w3.grid(row=10, column=0, columnspan=2, pady=10)
+w6 = Label(root, text="___________________________________________", fg="midnight blue", bg="White")
+w6.config(font=("Poppins",12,"bold"))
+w6.grid(row=8, column=0, columnspan=4, pady=10)
+
+# Stock Properties
+w5 = Label(root, text="Visualize Stock Properties", fg="midnight blue", bg="White")
+w5.config(font=("Poppins",12,"bold"))
+w5.grid(row=9, column=0, columnspan=4, pady=10)
+Prop = StringVar()
+Prop.set("Choose Company")
+S4Lb = Label(root, text="Company Name:", fg="Black", bg="White")
+S4Lb.config(font=("Poppins",10,"bold"))
+S4Lb.grid(row=10, column=0, padx=15, pady=15, sticky=W)
+S4 = OptionMenu(root, Prop,*OPTIONS)
+S4.grid(row=10, column=1) 
+close = Button(root, text="Close Price", command=Close,bg="midnight blue",fg="white")
+close.config(font=("poppins",10,"bold"))
+close.grid(row=11, column=0, padx=10, pady=15)
+hvl = Button(root, text="High vs Low", command=HVL,bg="midnight blue",fg="white")
+hvl.config(font=("poppins",10,"bold"))
+hvl.grid(row=11, column=1, padx=10, pady=15)
+trd = Button(root, text="Daily Trade", command=Trade,bg="midnight blue",fg="white")
+trd.config(font=("poppins",10,"bold"))
+trd.grid(row=11, column=2, padx=10, pady=15)
+
+w6 = Label(root, text="___________________________________________", fg="midnight blue", bg="White")
+w6.config(font=("Poppins",12,"bold"))
+w6.grid(row=12, column=0, columnspan=4, pady=10)
+
+# Comparison
+w3 = Label(root, text="Compare Market Volume", fg="midnight blue", bg="White")
+w3.config(font=("Poppins",12,"bold"))
+w3.grid(row=13, column=0, columnspan=4, pady=10)
 Select1 = StringVar()
 Select1.set("Choose Company")
 Select2 = StringVar()
 Select2.set("Choose Company")
-S2Lb = Label(root, text="First Company Name:", fg="Black", bg="White")
+S2Lb = Label(root, text="Company Name [1]:", fg="Black", bg="White")
 S2Lb.config(font=("Poppins",10,"bold"))
-S2Lb.grid(row=12, column=0, padx=10, pady=10, sticky=W)
-S3Lb = Label(root, text="Second Company Name:", fg="Black", bg="White")
+S2Lb.grid(row=14, column=0, padx=15, pady=15, sticky=W)
+S3Lb = Label(root, text="Company Name [2]:", fg="Black", bg="White")
 S3Lb.config(font=("Poppins",10,"bold"))
-S3Lb.grid(row=13, column=0, padx=10, pady=10, sticky=W)
-OPTIONS = sorted(l1)
+S3Lb.grid(row=15, column=0, padx=15, pady=15, sticky=W)
 S2 = OptionMenu(root, Select1,*OPTIONS)
-S2.grid(row=12, column=1) 
+S2.grid(row=14, column=1) 
 S3 = OptionMenu(root, Select2,*OPTIONS)
-S3.grid(row=13, column=1) 
-cmp = Button(root, text="Compare", command=Compare,bg="Orange",fg="white")
+S3.grid(row=15, column=1) 
+cmp = Button(root, text="Compare", command=Compare,bg="midnight blue",fg="white")
 cmp.config(font=("poppins",10,"bold"))
-cmp.grid(row=12, column=3, padx=10, pady=10)
-
+cmp.grid(row=14, column=2, padx=15, pady=15)
+w4 = Label(root, text="Kamrul Hasan | MIT 21st Batch", fg="White", bg="midnight blue")
+w4.config(font=("Poppins",8,"bold"))
+w4.grid(row=16, column=0, columnspan=4, pady=15)
 root.mainloop()
