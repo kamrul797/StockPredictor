@@ -131,8 +131,9 @@ regressor.add(LSTM(50, return_sequences=True));
 
 # 3rd LSTM Layer
 regressor.add(LSTM(50))
-
+# Output Layer
 regressor.add(Dense(1))
+
 regressor.compile(loss='mean_squared_error', optimizer='adam');
 
 l1=['BEXIMCO', 'BATBC', 'LANKABANGLA']
@@ -192,7 +193,11 @@ def LSTM():
         plt.xlabel('Number of Days',fontsize='11.5')
         plt.ylabel('Stock Closing Price',fontsize='11.5')
         plt.show()
-        fig.savefig('Output/BEXIMCO.jpg')
+        plt.show()
+        if (days==5):
+            fig.savefig('Output/BEXIMCO-5 days.jpg')
+        else:
+            fig.savefig('Output/BEXIMCO-10 days.jpg')
 
     elif (selection=='BATBC'):
         print('Total Data:', len(BATBC_data2))
@@ -246,7 +251,10 @@ def LSTM():
         plt.xlabel('Number of Days',fontsize='11.5')
         plt.ylabel('Stock Closing Price',fontsize='11.5')
         plt.show()
-        fig.savefig('Output/BATBC.jpg')
+        if (days==5):
+            fig.savefig('Output/BATBC-5 days.jpg')
+        else:
+            fig.savefig('Output/BATBC-10 days.jpg')
 
     elif (selection=='LANKABANGLA'):
         print('Total Data:', len(LB_data2))
@@ -300,7 +308,11 @@ def LSTM():
         plt.xlabel('Number of Days',fontsize='11.5')
         plt.ylabel('Stock Closing Price',fontsize='11.5')
         plt.show()
-        fig.savefig('Output/LANKABANGLA.jpg') 
+        if (days==5):
+            fig.savefig('Output/LANKABANGLA-5 days.jpg')
+        else:
+            fig.savefig('Output/LANKABANGLA-10 days.jpg')
+            
     else:
         print("Please select a company!")
 

@@ -1,11 +1,11 @@
-from sklearn.preprocessing  import MinMaxScaler;
+from sklearn.preprocessing import MinMaxScaler;
 import numpy as np;
 import matplotlib.pyplot as plt;
 import pandas as pd;
 from keras.models import Sequential;
 from keras.layers import Dense;
 from keras.layers import LSTM;
-from tkinter import *
+from tkinter import *;
 from keras.layers import Dropout;
 
 # BEXIMCO
@@ -199,7 +199,10 @@ def LSTM():
         plt.xlabel('Number of Days',fontsize='11.5')
         plt.ylabel('Stock Closing Price',fontsize='11.5')
         plt.show()
-        fig.savefig('Output/BEXIMCO.jpg')
+        if (days==5):
+            fig.savefig('Output/BEXIMCO-5 days.jpg')
+        else:
+            fig.savefig('Output/BEXIMCO-10 days.jpg')
 
     elif (selection=='BATBC'):
         print('Total Data:', len(BATBC_data2))
@@ -253,7 +256,10 @@ def LSTM():
         plt.xlabel('Number of Days',fontsize='11.5')
         plt.ylabel('Stock Closing Price',fontsize='11.5')
         plt.show()
-        fig.savefig('Output/BATBC.jpg')
+        if (days==5):
+            fig.savefig('Output/BATBC-5 days.jpg')
+        else:
+            fig.savefig('Output/BATBC-10 days.jpg')
 
     elif (selection=='LANKABANGLA'):
         print('Total Data:', len(LB_data2))
@@ -307,7 +313,11 @@ def LSTM():
         plt.xlabel('Number of Days',fontsize='11.5')
         plt.ylabel('Stock Closing Price',fontsize='11.5')
         plt.show()
-        fig.savefig('Output/LANKABANGLA.jpg') 
+        if (days==5):
+            fig.savefig('Output/LANKABANGLA-5 days.jpg')
+        else:
+            fig.savefig('Output/LANKABANGLA-10 days.jpg')
+
     else:
         print("Please select a company!")
 
