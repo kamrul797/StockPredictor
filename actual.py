@@ -1,35 +1,56 @@
 import matplotlib.pyplot as plt;
 import pandas as pd;
 
-data=pd.read_csv(r'data/Actual.csv', parse_dates=True)
-print(data.info());
-BATBC= data["BATBC"];
-BEXIMCO = data["BEXIMCO"];
-LANKABANGLA = data["LANKABANGLA"]
+BATBC = pd.read_excel('E:\IIT\Final Project\Code\App-latest\Data\Actual.xlsx',sheet_name=0, header=0, index_col="DATE")
+BEXIMCO = pd.read_excel('E:\IIT\Final Project\Code\App-latest\Data\Actual.xlsx',sheet_name=1, header=0, index_col="DATE")
+LANKABANGLA = pd.read_excel('E:\IIT\Final Project\Code\App-latest\Data\Actual.xlsx',sheet_name=2, header=0, index_col="DATE")
+IFIC = pd.read_excel('E:\IIT\Final Project\Code\App-latest\Data\Actual.xlsx',sheet_name=3, header=0, index_col="DATE")
+SAIFPOWER = pd.read_excel('E:\IIT\Final Project\Code\App-latest\Data\Actual.xlsx',sheet_name=4, header=0, index_col="DATE")
+BXPHARMA = pd.read_excel('E:\IIT\Final Project\Code\App-latest\Data\Actual.xlsx',sheet_name=5, header=0, index_col="DATE")
+
+print(BATBC.info())
 
 fig = plt.figure(figsize=(10,5))
 fig.suptitle('Actual Stock Closing Price [BATBC]', fontsize='12')
-plt.plot(BATBC[400:],color='green',alpha=0.9, label="BATBC")
+plt.plot(BATBC["CLOSEP*"],color='green',alpha=0.9, label="BATBC")
 plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
-plt.xlabel('Number of Days',fontsize='11.5')
+plt.xlabel('Time',fontsize='11.5')
 plt.ylabel('Stock Closing Price',fontsize='11.5')
 plt.show()
 fig.savefig('Output/BATBC-Actual.jpg')
 
 fig = plt.figure(figsize=(10,5))
 fig.suptitle('Actual Stock Closing Price [LANKABANGLA]', fontsize='12')
-plt.plot(LANKABANGLA[400:],color='green',alpha=0.9, label="LANKABANGLA")
+plt.plot(LANKABANGLA["CLOSEP*"],color='green',alpha=0.9, label="LANKABANGLA")
 plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
-plt.xlabel('Number of Days',fontsize='11.5')
+plt.xlabel('Time',fontsize='11.5')
 plt.ylabel('Stock Closing Price',fontsize='11.5')
 plt.show()
 fig.savefig('Output/LANKABANGLA-Actual.jpg')
 
 fig = plt.figure(figsize=(10,5))
 fig.suptitle('Actual Stock Closing Price [BEXIMCO]', fontsize='12')
-plt.plot(BEXIMCO[400:],color='green',alpha=0.9, label="BEXIMCO")
+plt.plot(BEXIMCO["CLOSEP*"],color='green',alpha=0.9, label="BEXIMCO")
 plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
-plt.xlabel('Number of Days',fontsize='11.5')
+plt.xlabel('Time',fontsize='11.5')
 plt.ylabel('Stock Closing Price',fontsize='11.5')
 plt.show()
 fig.savefig('Output/BEXIMCO-Actual.jpg')
+
+fig = plt.figure(figsize=(10,5))
+fig.suptitle('Actual Stock Closing Price [SAIFPOWER]', fontsize='12')
+plt.plot(SAIFPOWER["CLOSEP*"],color='green',alpha=0.9, label="SAIFPOWER")
+plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+plt.xlabel('Time',fontsize='11.5')
+plt.ylabel('Stock Closing Price',fontsize='11.5')
+plt.show()
+fig.savefig('Output/SAIFPOWER-Actual.jpg')
+
+fig = plt.figure(figsize=(10,5))
+fig.suptitle('Actual Stock Closing Price [BXPHARMA]', fontsize='12')
+plt.plot(BXPHARMA["CLOSEP*"],color='green',alpha=0.9, label="BXPHARMA")
+plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+plt.xlabel('Time',fontsize='11.5')
+plt.ylabel('Stock Closing Price',fontsize='11.5')
+plt.show()
+fig.savefig('Output/BXPHARMA-Actual.jpg')
